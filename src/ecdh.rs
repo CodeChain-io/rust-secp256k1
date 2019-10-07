@@ -19,8 +19,8 @@
 use std::ops;
 
 use super::Secp256k1;
-use key::{SecretKey, PublicKey};
 use ffi;
+use key::{PublicKey, SecretKey};
 
 /// A tag used for recovering the public key from a compact signature
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -33,12 +33,14 @@ impl SharedSecret {
     pub fn new(secp: &Secp256k1, point: &PublicKey, scalar: &SecretKey) -> SharedSecret {
         unsafe {
             let mut ss = ffi::SharedSecret::blank();
-            let res = ffi::secp256k1_ecdh(secp.ctx,
-                                          &mut ss,
-                                          point.as_ptr(),
-                                          scalar.as_ptr(),
-                                          ffi::secp256k1_ecdh_hash_function_default,
-                                          std::ptr::null_mut());
+            let res = ffi::secp256k1_ecdh(
+                secp.ctx,
+                &mut ss,
+                point.as_ptr(),
+                scalar.as_ptr(),
+                ffi::secp256k1_ecdh_hash_function_default,
+                std::ptr::null_mut(),
+            );
             debug_assert_eq!(res, 1);
             SharedSecret(ss)
         }
@@ -109,9 +111,9 @@ impl ops::Index<ops::RangeFull> for SharedSecret {
 
 #[cfg(test)]
 mod tests {
-    use rand::thread_rng;
-    use super::SharedSecret;
     use super::super::Secp256k1;
+    use super::SharedSecret;
+    use rand::thread_rng;
 
     #[test]
     fn ecdh() {
@@ -143,10 +145,10 @@ mod tests {
 #[cfg(all(test, feature = "unstable"))]
 mod benches {
     use rand::thread_rng;
-    use test::{Bencher, black_box};
+    use test::{black_box, Bencher};
 
-    use super::SharedSecret;
     use super::super::Secp256k1;
+    use super::SharedSecret;
 
     #[bench]
     pub fn bench_ecdh(bh: &mut Bencher) {
@@ -154,10 +156,9 @@ mod benches {
         let (sk, pk) = s.generate_keypair(&mut thread_rng()).unwrap();
 
         let s = Secp256k1::new();
-        bh.iter( || {
+        bh.iter(|| {
             let res = SharedSecret::new(&s, &pk, &sk);
             black_box(res);
         });
     }
 }
-
