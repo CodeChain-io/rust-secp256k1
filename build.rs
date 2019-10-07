@@ -117,6 +117,8 @@ fn main() {
 		.define("ENABLE_MODULE_SCHNORR", Some("1"))
 		.define("ENABLE_MODULE_RECOVERY", Some("1"));
 
+    base_config.flag("-Wno-nonnull-compare");
+
     let target = env::var("TARGET").expect("TARGET env variable is set by cargo; qed");
     if target.contains("android") {
         setup_android(&mut base_config);
