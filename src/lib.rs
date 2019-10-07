@@ -579,6 +579,7 @@ mod tests {
     use key::{PublicKey, SecretKey};
 
     #[test]
+    #[allow(clippy::cognitive_complexity)]
     fn capabilities() {
         let none = Secp256k1::with_caps(ContextFlag::None);
         let sign = Secp256k1::with_caps(ContextFlag::SignOnly);
@@ -636,7 +637,8 @@ mod tests {
     #[test]
     fn recid_sanity_check() {
         let one = RecoveryId(1);
-        assert_eq!(one, one.clone());
+        let one_copied = one;
+        assert_eq!(one, one_copied);
     }
 
     #[test]

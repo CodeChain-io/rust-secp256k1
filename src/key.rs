@@ -394,7 +394,8 @@ mod test {
                 self.0 -= 1;
             }
             fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
-                Ok(self.fill_bytes(dest))
+                self.fill_bytes(dest);
+                Ok(())
             }
         }
 
@@ -425,13 +426,14 @@ mod test {
         fn next_u64(&mut self) -> u64 {
             let hi = self.next_u32();
             let lo = self.next_u32();
-            ((hi as u64) << 32 | lo as u64)
+            (u64::from(hi) << 32 | u64::from(lo))
         }
         fn fill_bytes(&mut self, data: &mut [u8]) {
             rand_core::impls::fill_bytes_via_next(self, data);
         }
         fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
-            Ok(self.fill_bytes(dest))
+            self.fill_bytes(dest);
+            Ok(())
         }
     }
 
