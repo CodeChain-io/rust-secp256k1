@@ -415,11 +415,17 @@ impl Drop for Secp256k1 {
     }
 }
 
+impl Default for Secp256k1 {
+    fn default() -> Self {
+        Secp256k1::with_caps(ContextFlag::Full)
+    }
+}
+
 impl Secp256k1 {
     /// Creates a new Secp256k1 context
     #[inline]
     pub fn new() -> Secp256k1 {
-        Secp256k1::with_caps(ContextFlag::Full)
+        Self::default()
     }
 
     /// Creates a new Secp256k1 context with the specified capabilities

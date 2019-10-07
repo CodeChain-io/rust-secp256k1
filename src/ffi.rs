@@ -64,7 +64,7 @@ pub type EcdhHashFn =
 /// needed to do elliptic curve computations. If you create one of these
 /// with `secp256k1_context_create` you MUST destroy it with
 /// `secp256k1_context_destroy`, or else you will have a memory leak.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 #[repr(C)]
 pub struct Context(c_int);
 
@@ -77,11 +77,17 @@ impl_raw_debug!(PublicKey);
 impl PublicKey {
     /// Create a new (zeroed) public key usable for the FFI interface
     pub fn new() -> PublicKey {
-        PublicKey([0; 64])
+        Self::default()
     }
     /// Create a new (uninitialized) public key usable for the FFI interface
     pub unsafe fn blank() -> PublicKey {
         mem::uninitialized()
+    }
+}
+
+impl Default for PublicKey {
+    fn default() -> Self {
+        Self([0; 64])
     }
 }
 
@@ -106,7 +112,7 @@ impl_raw_debug!(RecoverableSignature);
 impl Signature {
     /// Create a new (zeroed) signature usable for the FFI interface
     pub fn new() -> Signature {
-        Signature([0; 64])
+        Self::default()
     }
     /// Create a new (uninitialized) signature usable for the FFI interface
     pub unsafe fn blank() -> Signature {
@@ -114,10 +120,16 @@ impl Signature {
     }
 }
 
+impl Default for Signature {
+    fn default() -> Self {
+        Self([0; 64])
+    }
+}
+
 impl RecoverableSignature {
     /// Create a new (zeroed) signature usable for the FFI interface
     pub fn new() -> RecoverableSignature {
-        RecoverableSignature([0; 65])
+        Self::default()
     }
     /// Create a new (uninitialized) signature usable for the FFI interface
     pub unsafe fn blank() -> RecoverableSignature {
@@ -125,8 +137,15 @@ impl RecoverableSignature {
     }
 }
 
+impl Default for RecoverableSignature {
+    fn default() -> Self {
+        Self([0; 65])
+    }
+}
+
 /// Library-internal representation of an ECDH shared secret
 #[repr(C)]
+#[derive(Default)]
 pub struct SharedSecret([c_uchar; 32]);
 impl_array_newtype!(SharedSecret, c_uchar, 32);
 impl_raw_debug!(SharedSecret);
@@ -134,7 +153,7 @@ impl_raw_debug!(SharedSecret);
 impl SharedSecret {
     /// Create a new (zeroed) signature usable for the FFI interface
     pub fn new() -> SharedSecret {
-        SharedSecret([0; 32])
+        Self::default()
     }
     /// Create a new (uninitialized) signature usable for the FFI interface
     pub unsafe fn blank() -> SharedSecret {
