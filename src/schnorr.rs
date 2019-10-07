@@ -103,7 +103,7 @@ impl Secp256k1 {
 
 #[cfg(test)]
 mod tests {
-    use rand::{Rng, thread_rng};
+    use rand::{thread_rng, RngCore};
     use ContextFlag;
     use Message;
     use Secp256k1;
