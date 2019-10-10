@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/apoelstra/rust-secp256k1.png?branch=master)](https://travis-ci.org/apoelstra/rust-secp256k1)
+[![Build Status](https://travis-ci.com/CodeChain-io/rust-secp256k1.png?branch=master)](https://travis-ci.com/CodeChain-io/rust-secp256k1)
 
 ### rust-secp256k1
 
