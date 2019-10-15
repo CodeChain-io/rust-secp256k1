@@ -17,7 +17,7 @@
 //! Direct bindings to the underlying C library functions. These should
 //! not be needed for most users.
 use std::hash;
-use std::mem;
+use std::mem::MaybeUninit;
 use std::os::raw::{c_int, c_uchar, c_uint, c_void};
 
 /// Flag for context to enable no precomputation
@@ -79,9 +79,12 @@ impl PublicKey {
     pub fn new() -> PublicKey {
         Self::default()
     }
+
+    /// # Safety
+    ///
     /// Create a new (uninitialized) public key usable for the FFI interface
-    pub unsafe fn blank() -> PublicKey {
-        mem::uninitialized()
+    pub unsafe fn uninit() -> MaybeUninit<PublicKey> {
+        MaybeUninit::uninit()
     }
 }
 
@@ -114,9 +117,12 @@ impl Signature {
     pub fn new() -> Signature {
         Self::default()
     }
+
+    /// # Safety
+    ///
     /// Create a new (uninitialized) signature usable for the FFI interface
-    pub unsafe fn blank() -> Signature {
-        mem::uninitialized()
+    pub unsafe fn uninit() -> MaybeUninit<Signature> {
+        MaybeUninit::uninit()
     }
 }
 
@@ -131,9 +137,12 @@ impl RecoverableSignature {
     pub fn new() -> RecoverableSignature {
         Self::default()
     }
+
+    /// # Safety
+    ///
     /// Create a new (uninitialized) signature usable for the FFI interface
-    pub unsafe fn blank() -> RecoverableSignature {
-        mem::uninitialized()
+    pub unsafe fn uninit() -> MaybeUninit<RecoverableSignature> {
+        MaybeUninit::uninit()
     }
 }
 
@@ -155,9 +164,12 @@ impl SharedSecret {
     pub fn new() -> SharedSecret {
         Self::default()
     }
+
+    /// # Safety
+    ///
     /// Create a new (uninitialized) signature usable for the FFI interface
-    pub unsafe fn blank() -> SharedSecret {
-        mem::uninitialized()
+    pub unsafe fn uninit() -> MaybeUninit<SharedSecret> {
+        MaybeUninit::uninit()
     }
 }
 

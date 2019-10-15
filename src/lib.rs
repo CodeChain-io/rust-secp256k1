@@ -92,14 +92,15 @@ impl Signature {
     #[inline]
     /// Converts a DER-encoded byte slice to a signature
     pub fn from_der(secp: &Secp256k1, data: &[u8]) -> Result<Signature, Error> {
-        let mut ret = unsafe { ffi::Signature::blank() };
-
         unsafe {
-            if ffi::secp256k1_ecdsa_signature_parse_der(secp.ctx, &mut ret, data.as_ptr(), data.len() as usize) == 1 {
-                Ok(Signature(ret))
-            } else {
-                Err(Error::InvalidSignature)
+            let mut ret = ffi::Signature::uninit();
+
+            if ffi::secp256k1_ecdsa_signature_parse_der(secp.ctx, ret.as_mut_ptr(), data.as_ptr(), data.len() as usize)
+                != 1
+            {
+                return Err(Error::InvalidSignature)
             }
+            Ok(Signature(ret.assume_init()))
         }
     }
 
@@ -109,12 +110,11 @@ impl Signature {
     /// support serializing to this "format"
     pub fn from_der_lax(secp: &Secp256k1, data: &[u8]) -> Result<Signature, Error> {
         unsafe {
-            let mut ret = ffi::Signature::blank();
-            if ffi::ecdsa_signature_parse_der_lax(secp.ctx, &mut ret, data.as_ptr(), data.len() as usize) == 1 {
-                Ok(Signature(ret))
-            } else {
-                Err(Error::InvalidSignature)
+            let mut ret = ffi::Signature::uninit();
+            if ffi::ecdsa_signature_parse_der_lax(secp.ctx, ret.as_mut_ptr(), data.as_ptr(), data.len() as usize) != 1 {
+                return Err(Error::InvalidSignature)
             }
+            Ok(Signature(ret.assume_init()))
         }
     }
 
@@ -184,22 +184,21 @@ impl RecoverableSignature {
     /// representation is nonstandard and defined by the libsecp256k1
     /// library.
     pub fn from_compact(secp: &Secp256k1, data: &[u8], recid: RecoveryId) -> Result<RecoverableSignature, Error> {
-        let mut ret = unsafe { ffi::RecoverableSignature::blank() };
-
         unsafe {
             if data.len() != 64 {
-                Err(Error::InvalidSignature)
-            } else if ffi::secp256k1_ecdsa_recoverable_signature_parse_compact(
+                return Err(Error::InvalidSignature)
+            }
+            let mut ret = ffi::RecoverableSignature::uninit();
+            if ffi::secp256k1_ecdsa_recoverable_signature_parse_compact(
                 secp.ctx,
-                &mut ret,
+                ret.as_mut_ptr(),
                 data.as_ptr(),
                 recid.0,
-            ) == 1
+            ) != 1
             {
-                Ok(RecoverableSignature(ret))
-            } else {
-                Err(Error::InvalidSignature)
+                return Err(Error::InvalidSignature)
             }
+            Ok(RecoverableSignature(ret.assume_init()))
         }
     }
 
@@ -230,12 +229,12 @@ impl RecoverableSignature {
     /// for verification
     #[inline]
     pub fn to_standard(&self, secp: &Secp256k1) -> Signature {
-        let mut ret = unsafe { ffi::Signature::blank() };
         unsafe {
-            let err = ffi::secp256k1_ecdsa_recoverable_signature_convert(secp.ctx, &mut ret, self.as_ptr());
+            let mut ret = ffi::Signature::uninit();
+            let err = ffi::secp256k1_ecdsa_recoverable_signature_convert(secp.ctx, ret.as_mut_ptr(), self.as_ptr());
             assert!(err == 1);
+            Signature(ret.assume_init())
         }
-        Signature(ret)
     }
 }
 
@@ -485,14 +484,14 @@ impl Secp256k1 {
             return Err(Error::IncapableContext)
         }
 
-        let mut ret = unsafe { ffi::Signature::blank() };
         unsafe {
+            let mut ret = ffi::Signature::uninit();
             // We can assume the return value because it's not possible to construct
             // an invalid signature from a valid `Message` and `SecretKey`
             assert_eq!(
                 ffi::secp256k1_ecdsa_sign(
                     self.ctx,
-                    &mut ret,
+                    ret.as_mut_ptr(),
                     msg.as_ptr(),
                     sk.as_ptr(),
                     ffi::secp256k1_nonce_function_rfc6979,
@@ -500,8 +499,8 @@ impl Secp256k1 {
                 ),
                 1
             );
+            Ok(Signature::from(ret.assume_init()))
         }
-        Ok(Signature::from(ret))
     }
 
     /// Constructs a signature for `msg` using the secret key `sk` and RFC6979 nonce
@@ -511,14 +510,14 @@ impl Secp256k1 {
             return Err(Error::IncapableContext)
         }
 
-        let mut ret = unsafe { ffi::RecoverableSignature::blank() };
         unsafe {
+            let mut ret = ffi::RecoverableSignature::uninit();
             // We can assume the return value because it's not possible to construct
             // an invalid signature from a valid `Message` and `SecretKey`
             assert_eq!(
                 ffi::secp256k1_ecdsa_sign_recoverable(
                     self.ctx,
-                    &mut ret,
+                    ret.as_mut_ptr(),
                     msg.as_ptr(),
                     sk.as_ptr(),
                     ffi::secp256k1_nonce_function_rfc6979,
@@ -526,8 +525,8 @@ impl Secp256k1 {
                 ),
                 1
             );
+            Ok(RecoverableSignature::from(ret.assume_init()))
         }
-        Ok(RecoverableSignature::from(ret))
     }
 
     /// Determines the public key for which `sig` is a valid signature for
@@ -537,14 +536,13 @@ impl Secp256k1 {
             return Err(Error::IncapableContext)
         }
 
-        let mut pk = unsafe { ffi::PublicKey::blank() };
-
         unsafe {
-            if ffi::secp256k1_ecdsa_recover(self.ctx, &mut pk, sig.as_ptr(), msg.as_ptr()) != 1 {
+            let mut pk = ffi::PublicKey::uninit();
+            if ffi::secp256k1_ecdsa_recover(self.ctx, pk.as_mut_ptr(), sig.as_ptr(), msg.as_ptr()) != 1 {
                 return Err(Error::InvalidSignature)
             }
-        };
-        Ok(key::PublicKey::from(pk))
+            Ok(key::PublicKey::from(pk.assume_init()))
+        }
     }
 
     /// Checks that `sig` is a valid ECDSA signature for `msg` using the public
