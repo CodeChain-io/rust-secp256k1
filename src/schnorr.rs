@@ -54,21 +54,21 @@ impl Secp256k1 {
             return Err(Error::IncapableContext)
         }
 
-        let mut ret: Signature = unsafe { mem::uninitialized() };
         unsafe {
+            let mut ret = mem::MaybeUninit::<Signature>::uninit();
             // We can assume the return value because it's not possible to construct
             // an invalid signature from a valid `Message` and `SecretKey`
             let err = ffi::secp256k1_schnorr_sign(
                 self.ctx,
-                ret.as_mut_ptr(),
+                (*ret.as_mut_ptr()).as_mut_ptr(),
                 msg.as_ptr(),
                 sk.as_ptr(),
                 ffi::secp256k1_nonce_function_rfc6979,
                 ptr::null(),
             );
             debug_assert_eq!(err, 1);
+            Ok(ret.assume_init())
         }
-        Ok(ret)
     }
 
     /// Verify a Schnorr signature
@@ -93,13 +93,13 @@ impl Secp256k1 {
             return Err(Error::IncapableContext)
         }
 
-        let mut pk = unsafe { ffi::PublicKey::blank() };
         unsafe {
-            if ffi::secp256k1_schnorr_recover(self.ctx, &mut pk, sig.as_ptr(), msg.as_ptr()) != 1 {
+            let mut pk = ffi::PublicKey::uninit();
+            if ffi::secp256k1_schnorr_recover(self.ctx, pk.as_mut_ptr(), sig.as_ptr(), msg.as_ptr()) != 1 {
                 return Err(Error::InvalidSignature)
             }
-        };
-        Ok(PublicKey::from(pk))
+            Ok(PublicKey::from(pk.assume_init()))
+        }
     }
 }
 

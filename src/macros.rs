@@ -61,9 +61,9 @@ macro_rules! impl_array_newtype {
                 unsafe {
                     use std::intrinsics::copy_nonoverlapping;
                     use std::mem;
-                    let mut ret: $thing = mem::uninitialized();
-                    copy_nonoverlapping(self.as_ptr(), ret.as_mut_ptr(), mem::size_of::<$thing>());
-                    ret
+                    let mut ret = mem::MaybeUninit::<$thing>::uninit();
+                    copy_nonoverlapping(self.as_ptr(), (*ret.as_mut_ptr()).as_mut_ptr(), mem::size_of::<$thing>());
+                    ret.assume_init()
                 }
             }
         }
