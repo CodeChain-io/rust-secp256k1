@@ -18,9 +18,8 @@
 
 use std::ops;
 
-use super::Secp256k1;
-use ffi;
-use key::{PublicKey, SecretKey};
+use crate::key::{PublicKey, SecretKey};
+use crate::{ffi, Secp256k1};
 
 /// A tag used for recovering the public key from a compact signature
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -111,13 +110,16 @@ impl ops::Index<ops::RangeFull> for SharedSecret {
 
 #[cfg(test)]
 mod tests {
-    use super::super::Secp256k1;
     use super::SharedSecret;
+    use crate::ContextFlag;
+
     use rand::thread_rng;
+
+    use super::*;
 
     #[test]
     fn ecdh() {
-        let s = Secp256k1::with_caps(::ContextFlag::SignOnly);
+        let s = Secp256k1::with_caps(ContextFlag::SignOnly);
         let (sk1, pk1) = s.generate_keypair(&mut thread_rng()).unwrap();
         let (sk2, pk2) = s.generate_keypair(&mut thread_rng()).unwrap();
 
@@ -130,7 +132,7 @@ mod tests {
 
     #[test]
     fn ecdh_raw() {
-        let s = Secp256k1::with_caps(::ContextFlag::SignOnly);
+        let s = Secp256k1::with_caps(ContextFlag::SignOnly);
         let (sk1, pk1) = s.generate_keypair(&mut thread_rng()).unwrap();
         let (sk2, pk2) = s.generate_keypair(&mut thread_rng()).unwrap();
 
@@ -147,12 +149,12 @@ mod benches {
     use rand::thread_rng;
     use test::{black_box, Bencher};
 
-    use super::super::Secp256k1;
     use super::SharedSecret;
+    use crate::{ContextFlag, Secp256k1};
 
     #[bench]
     pub fn bench_ecdh(bh: &mut Bencher) {
-        let s = Secp256k1::with_caps(::ContextFlag::SignOnly);
+        let s = Secp256k1::with_caps(ContextFlag::SignOnly);
         let (sk, pk) = s.generate_keypair(&mut thread_rng()).unwrap();
 
         let s = Secp256k1::new();

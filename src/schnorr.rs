@@ -15,17 +15,11 @@
 
 //! # Schnorr signatures
 
-use ContextFlag;
-use Error;
-use Message;
-use Secp256k1;
-
-use constants;
-use ffi;
-use key::{PublicKey, SecretKey};
-
 use std::convert::From;
 use std::{mem, ptr};
+
+use crate::key::{PublicKey, SecretKey};
+use crate::{constants, ffi, ContextFlag, Error, Message, Secp256k1};
 
 /// A Schnorr signature.
 pub struct Signature([u8; constants::SCHNORR_SIGNATURE_SIZE]);
@@ -105,12 +99,9 @@ impl Secp256k1 {
 
 #[cfg(test)]
 mod tests {
-    use super::Signature;
     use rand::{thread_rng, RngCore};
-    use ContextFlag;
-    use Error::IncapableContext;
-    use Message;
-    use Secp256k1;
+
+    use super::*;
 
     #[test]
     fn capabilities() {
@@ -126,22 +117,22 @@ mod tests {
         let (sk, pk) = full.generate_keypair(&mut thread_rng()).unwrap();
 
         // Try signing
-        assert_eq!(none.sign_schnorr(&msg, &sk), Err(IncapableContext));
-        assert_eq!(vrfy.sign_schnorr(&msg, &sk), Err(IncapableContext));
+        assert_eq!(none.sign_schnorr(&msg, &sk), Err(Error::IncapableContext));
+        assert_eq!(vrfy.sign_schnorr(&msg, &sk), Err(Error::IncapableContext));
         assert!(sign.sign_schnorr(&msg, &sk).is_ok());
         assert!(full.sign_schnorr(&msg, &sk).is_ok());
         assert_eq!(sign.sign_schnorr(&msg, &sk), full.sign_schnorr(&msg, &sk));
         let sig = full.sign_schnorr(&msg, &sk).unwrap();
 
         // Try verifying
-        assert_eq!(none.verify_schnorr(&msg, &sig, &pk), Err(IncapableContext));
-        assert_eq!(sign.verify_schnorr(&msg, &sig, &pk), Err(IncapableContext));
+        assert_eq!(none.verify_schnorr(&msg, &sig, &pk), Err(Error::IncapableContext));
+        assert_eq!(sign.verify_schnorr(&msg, &sig, &pk), Err(Error::IncapableContext));
         assert!(vrfy.verify_schnorr(&msg, &sig, &pk).is_ok());
         assert!(full.verify_schnorr(&msg, &sig, &pk).is_ok());
 
         // Try pk recovery
-        assert_eq!(none.recover_schnorr(&msg, &sig), Err(IncapableContext));
-        assert_eq!(sign.recover_schnorr(&msg, &sig), Err(IncapableContext));
+        assert_eq!(none.recover_schnorr(&msg, &sig), Err(Error::IncapableContext));
+        assert_eq!(sign.recover_schnorr(&msg, &sig), Err(Error::IncapableContext));
         assert!(vrfy.recover_schnorr(&msg, &sig).is_ok());
         assert!(full.recover_schnorr(&msg, &sig).is_ok());
 

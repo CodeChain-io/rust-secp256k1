@@ -12,6 +12,7 @@ description = "Fork of Rust bindings for Pieter Wuille's `libsecp256k1` library.
 keywords = [ "crypto", "ECDSA", "secp256k1", "libsecp256k1", "bitcoin" ]
 readme = "README.md"
 build = "build.rs"
+edition = "2018"
 
 [build-dependencies]
 cc = "1.0"

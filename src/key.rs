@@ -19,9 +19,7 @@ use arrayvec::ArrayVec;
 use rand::Rng;
 
 use super::Error::{self, IncapableContext, InvalidPublicKey, InvalidSecretKey};
-use super::{ContextFlag, Secp256k1};
-use constants;
-use ffi;
+use crate::{constants, ffi, ContextFlag, Secp256k1};
 
 /// Secret 256-bit key used as `x` in an ECDSA signature
 #[repr(C)]

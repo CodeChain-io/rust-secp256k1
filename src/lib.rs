@@ -572,9 +572,9 @@ mod tests {
     use rand::{thread_rng, RngCore};
 
     use super::constants;
+    use super::key::{PublicKey, SecretKey};
     use super::Error::{IncapableContext, IncorrectSignature, InvalidMessage, InvalidPublicKey, InvalidSignature};
     use super::{ContextFlag, Message, RecoverableSignature, RecoveryId, Secp256k1, Signature};
-    use key::{PublicKey, SecretKey};
 
     #[test]
     #[allow(clippy::cognitive_complexity)]
